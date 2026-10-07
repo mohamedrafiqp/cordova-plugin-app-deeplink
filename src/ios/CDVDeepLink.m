@@ -134,7 +134,7 @@ static NSString *gPendingURLString = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         SEL originalSelector = @selector(scene:willConnectToSession:options:);
-        SEL replacementSelector = @selector(deepLink_willConnectToSession:options:);
+        SEL replacementSelector = @selector(deepLink_willConnectToSession:session:options:);
 
         Method originalMethod = class_getInstanceMethod(self, originalSelector);
         Method replacementMethod = class_getInstanceMethod(self, replacementSelector);
@@ -145,6 +145,7 @@ static NSString *gPendingURLString = nil;
 }
 
 - (void)deepLink_willConnectToSession:(UIScene *)scene
+                              session:(UISceneSession *)session
                                options:(UISceneConnectionOptions *)connectionOptions {
     for (NSUserActivity *activity in connectionOptions.userActivities) {
         if ([activity.activityType isEqualToString:NSUserActivityTypeBrowsingWeb] &&
@@ -153,7 +154,7 @@ static NSString *gPendingURLString = nil;
         }
     }
     // After the exchange this invokes the original CordovaLib implementation.
-    [self deepLink_willConnectToSession:scene options:connectionOptions];
+    [self deepLink_willConnectToSession:scene session:session options:connectionOptions];
 }
 
 @end
