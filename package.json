@@ -1,0 +1,27 @@
+{
+  "name": "cordova-plugin-app-deeplink",
+  "version": "1.0.0",
+  "description": "Cordova plugin that delivers HTTPS App Links (Android) and Universal Links (iOS) for a configurable host and path prefix to the web application.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mohamedrafiqp/cordova-plugin-deeplink.git"
+  },
+  "cordova": {
+    "id": "cordova-plugin-app-deeplink",
+    "platforms": [
+      "android",
+      "ios"
+    ]
+  },
+  "keywords": [
+    "cordova",
+    "deeplink",
+    "deep-link",
+    "app-links",
+    "universal-links",
+    "ecosystem:cordova",
+    "cordova-android",
+    "cordova-ios"
+  ],
+  "license": "MIT"
+}

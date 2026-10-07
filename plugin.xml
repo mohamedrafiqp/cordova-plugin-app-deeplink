@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin id="cordova-plugin-app-deeplink" version="1.0.0" xmlns="http://apache.org/cordova/ns/plugins/1.0"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <name>Cordova App Deep Link</name>
+    <description>
+        Delivers HTTPS App Links (Android) and Universal Links (iOS) for a
+        configured host and path prefix to the web application. The plugin
+        configures the domain association (intent filter / associated domains)
+        and forwards the incoming URL to JavaScript for cold and warm starts.
+    </description>
+    <license>MIT</license>
+    <keywords>cordova,deeplink,app-links,universal-links,deep-linking</keywords>
+
+    <!--
+        Plugin variables. Set them in the app's config.xml:
+
+            <plugin name="cordova-plugin-app-deeplink" spec="^1.0.0">
+                <variable name="DEEPLINK_HOST" value="www.example.com" />
+                <variable name="DEEPLINK_PATH_PREFIX" value="/product/" />
+            </plugin>
+
+        or pass them on the CLI while adding the plugin (see README.md for the
+        exact command). Each value is passed as one install variable.
+
+        They are referenced as $DEEPLINK_HOST / $DEEPLINK_PATH_PREFIX below and
+        are also copied into the app config.xml as DeepLinkHost /
+        DeepLinkPathPrefix so the native side applies the same filter.
+    -->
+    <preference name="DEEPLINK_HOST" />
+    <preference name="DEEPLINK_PATH_PREFIX" default="/" />
+
+    <info>cordova-plugin-app-deeplink: host=$DEEPLINK_HOST pathPrefix=$DEEPLINK_PATH_PREFIX</info>
+
+    <engines>
+        <engine name="cordova-android" version=">=10.0.0" />
+        <engine name="cordova-ios" version=">=6.0.0" />
+    </engines>
+
+    <js-module src="www/deeplink.js" name="DeepLink">
+        <clobbers target="cordova.plugins.deepLink" />
+    </js-module>
+
+    <platform name="android">
+        <config-file target="res/xml/config.xml" parent="/*">
+            <feature name="DeepLink">
+                <param name="android-package" value="cordova.plugins.deeplink.DeepLinkPlugin" />
+                <param name="onload" value="true" />
+            </feature>
+            <preference name="DeepLinkHost" value="$DEEPLINK_HOST" />
+            <preference name="DeepLinkPathPrefix" value="$DEEPLINK_PATH_PREFIX" />
+        </config-file>
+
+        <!-- HTTPS App Links: only $DEEPLINK_HOST$DEEPLINK_PATH_PREFIX opens the app. -->
+        <config-file target="AndroidManifest.xml" parent="/manifest/application/activity">
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="$DEEPLINK_HOST" android:pathPrefix="$DEEPLINK_PATH_PREFIX" />
+            </intent-filter>
+        </config-file>
+
+        <source-file src="src/android/DeepLinkPlugin.java" target-dir="src/cordova/plugins/deeplink" />
+    </platform>
+
+    <platform name="ios">
+        <config-file target="config.xml" parent="/*">
+            <feature name="DeepLink">
+                <param name="ios-package" value="CDVDeepLink" />
+                <param name="onload" value="true" />
+            </feature>
+            <preference name="DeepLinkHost" value="$DEEPLINK_HOST" />
+            <preference name="DeepLinkPathPrefix" value="$DEEPLINK_PATH_PREFIX" />
+        </config-file>
+
+        <!-- Associated Domains for Universal Links.
+             The wildcard target matches both cordova-ios 6/7
+             (<ProjectName>/Entitlements-*.plist) and cordova-ios 8+
+             (App/Entitlements-*.plist) layouts. -->
+        <config-file target="*/Entitlements-Debug.plist" parent="com.apple.developer.associated-domains">
+            <array>
+                <string>applinks:$DEEPLINK_HOST</string>
+            </array>
+        </config-file>
+        <config-file target="*/Entitlements-Release.plist" parent="com.apple.developer.associated-domains">
+            <array>
+                <string>applinks:$DEEPLINK_HOST</string>
+            </array>
+        </config-file>
+
+        <header-file src="src/ios/CDVDeepLink.h" />
+        <source-file src="src/ios/CDVDeepLink.m" />
+    </platform>
+
+</plugin>
